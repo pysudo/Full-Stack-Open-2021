@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+
+import phoneBookService from './services/phonebook';
+
 
 const Filter = ({ onChangeHandler, value }) => {
 
@@ -11,6 +13,7 @@ const Filter = ({ onChangeHandler, value }) => {
     </div>
   );
 };
+
 
 const PersonForm = ({ onChangeHandlers, values, onClickHandler }) => {
   const { handleNameChange, handleNumberChange } = onChangeHandlers;
@@ -34,24 +37,35 @@ const PersonForm = ({ onChangeHandlers, values, onClickHandler }) => {
   );
 };
 
-const Persons = ({ persons, filter }) => {
-  const personsToDisplay = persons.filter((person) => {
 
-    return person.name.toLowerCase().includes(filter.toLowerCase());
-  })
+const Persons = ({ persons, filter, deleteContactHandler }) => {
+  const personsToDisplay = persons.filter((person) =>
+    person.name.toLowerCase().includes(filter.toLowerCase())
+  )
 
   return (
-    personsToDisplay.map(person => <Person key={person.name} person={person} />)
-  )
+    personsToDisplay.map(person =>
+      <Person key={person.name}
+        person={person}
+        deleteContactHandler={deleteContactHandler}
+      />
+    ))
 };
 
-const Person = ({ person }) => {
+
+const Person = ({ person, deleteContactHandler }) => {
+  
   return (
     <div>
       {person.name} {person.number}
+      &nbsp;
+      <button onClick={() => deleteContactHandler(person.id, person.name)}>
+        delete
+      </button>
     </div>
   )
 };
+
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -59,33 +73,73 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('');
   const [newFilter, setNewFilter] = useState('');
 
+  const handlerFilterReset = () => { setNewName(""); setNewNumber(""); };
   const handleNameChange = (event) => setNewName(event.target.value);
   const handleNumberChange = (event) => setNewNumber(event.target.value);
   const handleFilterChange = (event) => setNewFilter(event.target.value);
 
-  const addContact = (event) => {
+  // Add contact
+  const addContactHandler = (event) => {
     event.preventDefault();
-
-    const personsToDisplay = persons.map(person => person.name);
-    if (personsToDisplay.includes(newName.trim())) {
-      return alert(`${newName.trim()} is already added to phonebook`);
-    }
-
     const newObject = {
       name: newName.trim(),
       number: newNumber.trim()
     };
 
-    setPersons(persons.concat(newObject));
-    setNewName("");
-    setNewNumber("");
+    // Check if contact detail already exists
+    const personNames = persons.map(person => person.name.toLowerCase());
+    if (personNames.includes(newName.trim().toLowerCase())) {
+      // If exists, update the number
+      let confirmationMessage = "is already added to phonebook, replace";
+      confirmationMessage += " the old number with a new one?";
+
+      if (window.confirm(`${newName.trim()} ${confirmationMessage}`)) {
+        updateContactHandler(newObject);
+        handlerFilterReset();
+      }
+      return; // Skip adding the same contact detail
+    }
+
+    phoneBookService.create(newObject)
+      .then(newContactDetail => {
+        setPersons(persons.concat(newContactDetail));
+        handlerFilterReset();
+      })
   };
 
-  const effectHook = () => axios.get("http://localhost:3001/persons")
-    .then((response) => {
-      setPersons(response.data);
-    });
+  // Modify contact
+  const updateContactHandler = (newObject) => {
+    const contactDetail = persons.find(person => {
+      return person.name.toLowerCase() === newName.trim().toLowerCase()
+    })
+
+    phoneBookService.update(contactDetail.id, newObject)
+      .then(updatedContactDetail =>
+        setPersons(persons.map(person =>
+          person.id !== updatedContactDetail.id
+            ? person
+            : updatedContactDetail
+        ))
+      );
+  }
+
+  // Remove contact
+  const deleteContactHandler = (id, name) => {
+    if (!window.confirm(`Delete ${name}?`)) {
+      return;
+    }
+
+    return phoneBookService.remove(id, name)
+      .then(() =>
+        setPersons(persons.filter(person => person.id !== id))
+      );
+  };
+
+  // Effect hook
+  const effectHook = () => phoneBookService.getAll()
+    .then(contactDetails => setPersons(contactDetails));
   useEffect(effectHook, []);
+
 
   return (
     <div>
@@ -98,12 +152,16 @@ const App = () => {
       <PersonForm
         onChangeHandlers={{ handleNameChange, handleNumberChange }}
         values={{ newName, newNumber }}
-        onClickHandler={addContact}
+        onClickHandler={addContactHandler}
       />
 
       <h2>Numbers</h2>
 
-      <Persons persons={persons} filter={newFilter} />
+      <Persons
+        persons={persons}
+        filter={newFilter}
+        deleteContactHandler={deleteContactHandler}
+      />
     </div>
   )
 };
