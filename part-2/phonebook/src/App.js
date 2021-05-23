@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import { PersonForm, Persons } from './components/Person';
+import Notification  from './components/Utils';
 import phoneBookService from './services/phonebook';
 
 
@@ -14,66 +16,16 @@ const Filter = ({ onChangeHandler, value }) => {
   );
 };
 
-
-const PersonForm = ({ onChangeHandlers, values, onClickHandler }) => {
-  const { handleNameChange, handleNumberChange } = onChangeHandlers;
-  const { newName, newNumber } = values;
-
-  return (
-    <form>
-      <div>
-        <label>
-          name: <input onChange={handleNameChange} value={newName} />
-        </label>
-        <br />
-        <label>
-          number: <input onChange={handleNumberChange} value={newNumber} />
-        </label>
-      </div>
-      <div>
-        <button type="submit" onClick={onClickHandler}>add</button>
-      </div>
-    </form>
-  );
-};
-
-
-const Persons = ({ persons, filter, deleteContactHandler }) => {
-  const personsToDisplay = persons.filter((person) =>
-    person.name.toLowerCase().includes(filter.toLowerCase())
-  )
-
-  return (
-    personsToDisplay.map(person =>
-      <Person key={person.name}
-        person={person}
-        deleteContactHandler={deleteContactHandler}
-      />
-    ))
-};
-
-
-const Person = ({ person, deleteContactHandler }) => {
-  
-  return (
-    <div>
-      {person.name} {person.number}
-      &nbsp;
-      <button onClick={() => deleteContactHandler(person.id, person.name)}>
-        delete
-      </button>
-    </div>
-  )
-};
-
-
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [newFilter, setNewFilter] = useState('');
+  const [alertMessage, setAlertMessage] = useState(null);
 
   const handlerFilterReset = () => { setNewName(""); setNewNumber(""); };
+  const hideAlertMessageHandler = () =>
+    setTimeout(() => setAlertMessage(null), 5000);
   const handleNameChange = (event) => setNewName(event.target.value);
   const handleNumberChange = (event) => setNewNumber(event.target.value);
   const handleFilterChange = (event) => setNewFilter(event.target.value);
@@ -93,7 +45,7 @@ const App = () => {
       let confirmationMessage = "is already added to phonebook, replace";
       confirmationMessage += " the old number with a new one?";
 
-      if (window.confirm(`${newName.trim()} ${confirmationMessage}`)) {
+      if (window.confirm(`'${newName.trim()}' ${confirmationMessage}`)) {
         updateContactHandler(newObject);
         handlerFilterReset();
       }
@@ -104,6 +56,11 @@ const App = () => {
       .then(newContactDetail => {
         setPersons(persons.concat(newContactDetail));
         handlerFilterReset();
+        setAlertMessage({
+          message: `Added ${newContactDetail.name}`,
+          success: true
+        });
+        hideAlertMessageHandler();
       })
   };
 
@@ -114,25 +71,47 @@ const App = () => {
     })
 
     phoneBookService.update(contactDetail.id, newObject)
-      .then(updatedContactDetail =>
+      .then(updatedContactDetail => {
+        let updateMessage = `Updated ${newObject.name}`;
+        updateMessage += ` with phone number ${newObject.number}`;
+        setAlertMessage({ message: updateMessage, success: true });
+        hideAlertMessageHandler();
+
         setPersons(persons.map(person =>
           person.id !== updatedContactDetail.id
             ? person
             : updatedContactDetail
         ))
-      );
+      })
+      .catch(error => {
+        let customErrorMessage = `Information of' ${contactDetail.name}' has`;
+        customErrorMessage += " already been removed from the server";
+        setPersons(persons.filter(person =>
+          person.id !== contactDetail.id
+        ))
+        setAlertMessage({ message: customErrorMessage, success: false });
+        hideAlertMessageHandler();
+      });
   }
 
   // Remove contact
   const deleteContactHandler = (id, name) => {
     if (!window.confirm(`Delete ${name}?`)) {
-      return;
+      return null;
     }
 
+    setPersons(persons.filter(person => person.id !== id));
     return phoneBookService.remove(id, name)
-      .then(() =>
-        setPersons(persons.filter(person => person.id !== id))
-      );
+      .then(() => {
+        setAlertMessage({ message: `Deleted ${name}`, success: true });
+        hideAlertMessageHandler();
+      })
+      .catch(error => {
+        let customErrorMessage = `Information of '${name}' has already`;
+        customErrorMessage += " been removed from the server";
+        setAlertMessage({ message: customErrorMessage, success: false });
+        hideAlertMessageHandler();
+      });
   };
 
   // Effect hook
@@ -144,6 +123,10 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification
+        message={alertMessage ? alertMessage.message : null}
+        success={alertMessage ? alertMessage.success : null}
+      />
 
       <Filter onChangeHandler={handleFilterChange} value={newFilter} />
 
