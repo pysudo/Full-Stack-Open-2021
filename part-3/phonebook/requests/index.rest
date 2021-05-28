@@ -1,0 +1,29 @@
+# GET list of phonebook entries 
+GET http://localhost:3001/api/persons
+
+###
+
+# General info
+GET http://localhost:3001/info
+
+###
+
+# GET single phonebook entry 
+GET http://localhost:3001/api/persons/1
+
+###
+
+# DELETE single phonebook entry 
+DELETE  http://localhost:3001/api/persons/1
+
+###
+
+# POST single phonebook entry 
+POST  http://localhost:3001/api/persons
+Content-Type: application/json
+
+{
+    "name": "Sven Snusberg",
+    "number": "12345-SNUS"
+}
+
