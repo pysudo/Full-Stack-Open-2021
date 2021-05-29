@@ -1,9 +1,28 @@
-const express = require("express");
+const express = require('express');
+const morgan = require('morgan');
 
 
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
+
+morgan.token('body', (request) => JSON.stringify(request.body));
+app.use(morgan(function (tokens, request, response) {
+    const logData = [
+        tokens.method(request, response),
+        tokens.url(request, response),
+        tokens.status(request, response),
+        tokens.res(request, response, 'content-length'), '-',
+        tokens['response-time'](request, response), 'ms',
+    ];
+
+    // For POST requests, include the request body
+    if (request.method === "POST") {
+        return logData.concat(tokens.body(request, response)).join(' ');
+    }
+
+    return logData.join(' ');
+}));
 
 persons = [{
     "name": "Arto Hellas",
@@ -28,7 +47,7 @@ persons = [{
 ]
 
 // General info
-app.get("/info", (request, response) => {
+app.get('/info', (request, response) => {
 
     return response.send(`<p>Phonebook has info for 4 people</p>
     <p>${new Date()}</p>
@@ -37,14 +56,14 @@ app.get("/info", (request, response) => {
 
 
 // GET list of phonebook entries 
-app.get("/api/persons", (request, response) => {
+app.get('/api/persons', (request, response) => {
 
     return response.json(persons);
 });
 
 
 // GET single phonebook entry 
-app.get("/api/persons/:id", (request, response) => {
+app.get('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id);
     const person = persons.find(person => person.id === id)
     if (!person) {
@@ -56,7 +75,7 @@ app.get("/api/persons/:id", (request, response) => {
 
 
 // DELETE single phonebook entry 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id);
 
     const person = persons.find(person => person.id === id) // Check if exists
@@ -71,10 +90,9 @@ app.delete("/api/persons/:id", (request, response) => {
 
 
 // POST(append) single entry to the phonebook list
-app.post("/api/persons", (request, response) => {
+app.post('/api/persons', (request, response) => {
 
-    console.log(request.headers);
-    const {name, number} = request.body;
+    const { name, number } = request.body;
     if (!name) {
         return response.status(400).json({
             error: "name is missing"
@@ -93,7 +111,7 @@ app.post("/api/persons", (request, response) => {
         });
     }
 
-    const newPerson =   {
+    const newPerson = {
         name,
         number,
         id: Math.floor(Math.random() * 1000000)
