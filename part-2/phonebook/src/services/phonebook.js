@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-const baseURL = "/api/persons"; // Proxied to backend host on production build
+const baseURL = "/api/persons"; // Proxy unhandled address in development build
 
 
 const getAll = () => {

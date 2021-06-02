@@ -9,7 +9,7 @@ GET http://localhost:3001/info
 ###
 
 # GET single phonebook entry 
-GET http://localhost:3001/api/persons/1
+GET http://localhost:3001/api/persons/60b640c96ee9c60df9bfe1ca
 
 ###
 

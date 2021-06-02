@@ -31,7 +31,7 @@ const Persons = ({ persons, filter, deleteContactHandler }) => {
 
     return (
         personsToDisplay.map(person =>
-            <Person key={person.name}
+            <Person key={person.id}
                 person={person}
                 deleteContactHandler={deleteContactHandler}
             />

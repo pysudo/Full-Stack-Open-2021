@@ -1,6 +1,8 @@
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const Person = require('./models/person');
 
 
 const app = express();
@@ -27,27 +29,6 @@ app.use(morgan(function (tokens, request, response) {
     return logData.join(' ');
 }));
 
-persons = [{
-    "name": "Arto Hellas",
-    "number": "040-123456",
-    "id": 1
-},
-{
-    "name": "Ada Lovelace",
-    "number": "39-44-5323523",
-    "id": 2
-},
-{
-    "name": "Dan Abramov",
-    "number": "12-43-234345",
-    "id": 3
-},
-{
-    "name": "Mary Poppendieck",
-    "number": "39-23-6423122",
-    "id": 4
-}
-]
 
 // General info
 app.get('/info', (request, response) => {
@@ -60,8 +41,9 @@ app.get('/info', (request, response) => {
 
 // GET list of phonebook entries 
 app.get('/api/persons', (request, response) => {
-
-    return response.json(persons);
+    Person.find({}).then(persons => {
+        response.json(persons);
+    });
 });
 
 
@@ -94,7 +76,6 @@ app.delete('/api/persons/:id', (request, response) => {
 
 // POST(append) single entry to the phonebook list
 app.post('/api/persons', (request, response) => {
-
     const { name, number } = request.body;
     if (!name) {
         return response.status(400).json({
@@ -107,25 +88,14 @@ app.post('/api/persons', (request, response) => {
         });
     }
 
-    const person = persons.find(person => person.name === name)
-    if (person) {
-        return response.status(409).json({
-            error: "name must be unique"
-        });
-    }
-
-    const newPerson = {
-        name,
-        number,
-        id: Math.floor(Math.random() * 1000000)
-    };
-    persons = persons.concat(newPerson);
-
-    return response.json(newPerson);
+    const person = new Person({ name, number });
+    person.save({}).then(savedPerson => {
+        response.json(savedPerson)
+    });
 });
 
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
 
     console.log(`Listening to server at port ${PORT}`);
