@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { PersonForm, Persons } from './components/Person';
-import Notification  from './components/Utils';
+import Notification from './components/Utils';
 import phoneBookService from './services/phonebook';
 
 
@@ -62,6 +62,11 @@ const App = () => {
         });
         hideAlertMessageHandler();
       })
+      .catch(error => {
+        setAlertMessage({ message: error.response.data.error, success: false });
+        handlerFilterReset();
+        hideAlertMessageHandler();
+      });
   };
 
   // Modify contact
@@ -84,12 +89,13 @@ const App = () => {
         ))
       })
       .catch(error => {
-        let customErrorMessage = `Information of' ${contactDetail.name}' has`;
-        customErrorMessage += " already been removed from the server";
-        setPersons(persons.filter(person =>
-          person.id !== contactDetail.id
-        ))
-        setAlertMessage({ message: customErrorMessage, success: false });
+        if (error.response.status === 404) {
+          // When a resource doesn't exist, update the current state
+          setPersons(persons.filter(person =>
+            person.id !== contactDetail.id
+          ))
+        }
+        setAlertMessage({ message: error.response.data.error, success: false });
         hideAlertMessageHandler();
       });
   }
@@ -107,9 +113,7 @@ const App = () => {
         hideAlertMessageHandler();
       })
       .catch(error => {
-        let customErrorMessage = `Information of '${name}' has already`;
-        customErrorMessage += " been removed from the server";
-        setAlertMessage({ message: customErrorMessage, success: false });
+        setAlertMessage({ message: error.response.data.error, success: false });
         hideAlertMessageHandler();
       });
   };

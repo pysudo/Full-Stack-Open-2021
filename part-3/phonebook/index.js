@@ -53,12 +53,10 @@ app.get('/api/persons', (request, response) => {
 app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
         .then(person => {
-            if (person) {
-                response.json(person);
+            if (!person) {
+                return response.status(404).end();
             }
-            else {
-                response.status(404).end();
-            }
+            response.json(person);
         })
         .catch(next);
 });
@@ -75,7 +73,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
             // Handle delete attempts of non-exisiting well-formed person id
             response.status(404).send({
-                error: "The contact does not exist or has already been removed."
+                error: "The contact doesn't exist or has been removed."
             });
         })
         .catch(next);
@@ -84,17 +82,6 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 // POST(append) single entry to the phonebook list
 app.post('/api/persons', (request, response, next) => {
-    if (!request.body.name) {
-        return response.status(400).json({
-            error: "name is missing"
-        });
-    }
-    if (!request.body.number) {
-        return response.status(400).json({
-            error: "number is missing"
-        });
-    }
-
     const person = new Person(request.body);
     person.save({})
         .then(savedPerson => {
@@ -112,8 +99,15 @@ app.put('/api/persons/:id', (request, response, next) => {
         });
     }
 
-    Person.findByIdAndUpdate(request.params.id, request.body, { new: true })
+    updatedPerson = { number: request.body.number }
+    const opts = { new: true, runValidators: true };
+    Person.findByIdAndUpdate(request.params.id, updatedPerson, opts)
         .then(updateNote => {
+            if (!updateNote) {
+                return response.status(404).send({
+                    error: "The contact doesn't exist or has been removed."
+                });
+            }
             response.json(updateNote);
         })
         .catch(next);
@@ -134,6 +128,10 @@ const errorHandler = (error, request, response, next) => {
     // Handle bad formatted person id
     if (error.name === "CastError") {
         return response.status(400).send({ error: "malformatted id" })
+    }
+    // Handle mongoose validation errors
+    if (error.name === "ValidationError") {
+        return response.status(400).send({ error: error.message })
     }
 
     next(error);
