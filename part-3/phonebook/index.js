@@ -32,10 +32,12 @@ app.use(morgan(function (tokens, request, response) {
 
 // General info
 app.get('/info', (request, response) => {
-
-    return response.send(`<p>Phonebook has info for 4 people</p>
-    <p>${new Date()}</p>
-    `);
+    Person.find({})
+        .then(persons => {
+            let infoMessage = `<p>Phonebook has info for ${persons.length} `;
+            infoMessage += `people</p><p>${new Date()}</p>`;
+            response.send(infoMessage);
+        });
 });
 
 
@@ -48,55 +50,99 @@ app.get('/api/persons', (request, response) => {
 
 
 // GET single phonebook entry 
-app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id);
-    const person = persons.find(person => person.id === id)
-    if (!person) {
-        return response.status(404).end();
-    }
-
-    return response.json(person);
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then(person => {
+            if (person) {
+                response.json(person);
+            }
+            else {
+                response.status(404).end();
+            }
+        })
+        .catch(next);
 });
 
 
 // DELETE single phonebook entry 
-app.delete('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id);
+app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndDelete(request.params.id)
+        .then(deletedPerson => {
+            // Check if the person to be deleted exists in the database
+            if (deletedPerson) {
+                return response.status(204).end();
+            }
 
-    const person = persons.find(person => person.id === id) // Check if exists
-    if (!person) {
-        return response.status(404).end();
-    }
-
-    persons = persons.filter(person => person.id !== id)
-
-    return response.status(204).end();
+            // Handle delete attempts of non-exisiting well-formed person id
+            response.status(404).send({
+                error: "The contact does not exist or has already been removed."
+            });
+        })
+        .catch(next);
 });
 
 
 // POST(append) single entry to the phonebook list
-app.post('/api/persons', (request, response) => {
-    const { name, number } = request.body;
-    if (!name) {
+app.post('/api/persons', (request, response, next) => {
+    if (!request.body.name) {
         return response.status(400).json({
             error: "name is missing"
         });
     }
-    if (!number) {
+    if (!request.body.number) {
         return response.status(400).json({
             error: "number is missing"
         });
     }
 
-    const person = new Person({ name, number });
-    person.save({}).then(savedPerson => {
-        response.json(savedPerson)
-    });
+    const person = new Person(request.body);
+    person.save({})
+        .then(savedPerson => {
+            response.json(savedPerson)
+        })
+        .catch(next);
 });
+
+
+// Updates the name or number or both of an already existing contact
+app.put('/api/persons/:id', (request, response, next) => {
+    if (!request.body.number) {
+        return response.status(400).json({
+            error: "number is missing"
+        });
+    }
+
+    Person.findByIdAndUpdate(request.params.id, request.body, { new: true })
+        .then(updateNote => {
+            response.json(updateNote);
+        })
+        .catch(next);
+});
+
+
+// Requests made to non-existent routes
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: "unknown endpoint" });
+};
+app.use(unknownEndpoint);
+
+
+// Error handler middleware
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message);
+
+    // Handle bad formatted person id
+    if (error.name === "CastError") {
+        return response.status(400).send({ error: "malformatted id" })
+    }
+
+    next(error);
+};
+app.use(errorHandler);
 
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
 
     console.log(`Listening to server at port ${PORT}`);
-})
+});

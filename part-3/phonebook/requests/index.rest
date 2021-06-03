@@ -9,12 +9,24 @@ GET http://localhost:3001/info
 ###
 
 # GET single phonebook entry 
-GET http://localhost:3001/api/persons/60b640c96ee9c60df9bfe1ca
+GET http://localhost:3001/api/persons/60b640f1b5688b0e04739a7d  
 
 ###
 
 # DELETE single phonebook entry 
-DELETE  http://localhost:3001/api/persons/1
+DELETE  http://localhost:3001/api/persons/60b7f17a0477bc17e43d605f
+
+###
+
+# Updates the number of an already existing contact
+PUT  http://localhost:3001/api/persons/60b7f8bd07fa0d18d77478ee
+Content-Type: application/json
+
+{
+    "name": "Sven Snusberg",
+    "number": "12345-SNUS",
+    "asdasd": "loooooool"
+}
 
 ###
 
@@ -23,7 +35,8 @@ POST  http://localhost:3001/api/persons
 Content-Type: application/json
 
 {
-    "name": "Sven Snusberg",
-    "number": "12345-SNUS"
+    "name": "Ricky Robbins",
+    "number": "77777-CHAOS",
+    "junk": "asdasdbkad"
 }
 
