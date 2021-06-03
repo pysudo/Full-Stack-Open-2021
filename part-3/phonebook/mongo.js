@@ -1,23 +1,23 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
+require("dotenv").config();
+const mongoose = require("mongoose");
 
 
 if (
     process.argv.length < 3
     || (process.argv.length > 3 && (process.argv.length !== 5))
 ) {
-    console.log(`Please provide the password as an argument.\n\nUsage:`
-        + `\n\tnode mongo.js <password> \t\t\t\tdisplay all of the entries `
-        + `in the phonebook.`
-        + `\n\tnode mongo.js <password> <name> <phone number> \t\tnew entry `
-        + `to the phonebook will be saved.`
+    console.log("Please provide the password as an argument.\n\nUsage:"
+        + "\n\tnode mongo.js <password> \t\t\t\tdisplay all of the entries "
+        + "in the phonebook."
+        + "\n\tnode mongo.js <password> <name> <phone number> \t\tnew entry "
+        + "to the phonebook will be saved."
     );
-    process.exit(1)
+    process.exit(1);
 }
 
 
 let URL = `mongodb+srv://${process.env.mongo_username}:${process.argv[2]}`;
-URL += '@cluster0.llzrs.mongodb.net/phonebook?retryWrites=true&w=majority';
+URL += "@cluster0.llzrs.mongodb.net/phonebook?retryWrites=true&w=majority";
 mongoose.connect(URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -29,10 +29,10 @@ const createPerson = () => {
         name: String,
         number: String
     });
-    const Person = mongoose.model('Person', personSchema);
+    const Person = mongoose.model("Person", personSchema);
 
     return Person;
-}
+};
 
 
 const getPersons = () => {
@@ -56,7 +56,7 @@ const addPerson = (name, number) => {
             `added ${result.name} number ${result.number} to phonebook`
         );
         mongoose.connection.close();
-    })
+    });
 };
 
 

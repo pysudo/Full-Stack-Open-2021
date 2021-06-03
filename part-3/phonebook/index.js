@@ -1,37 +1,37 @@
-require('dotenv').config();
-const express = require('express');
-const morgan = require('morgan');
-const cors = require('cors');
-const Person = require('./models/person');
+require("dotenv").config();
+const express = require("express");
+const morgan = require("morgan");
+const cors = require("cors");
+const Person = require("./models/person");
 
 
 const app = express();
 
-app.use(express.static('build'));
+app.use(express.static("build"));
 app.use(express.json());
 app.use(cors());
 
-morgan.token('body', (request) => JSON.stringify(request.body));
+morgan.token("body", (request) => JSON.stringify(request.body));
 app.use(morgan(function (tokens, request, response) {
     const logData = [
         tokens.method(request, response),
         tokens.url(request, response),
         tokens.status(request, response),
-        tokens.res(request, response, 'content-length'), '-',
-        tokens['response-time'](request, response), 'ms',
+        tokens.res(request, response, "content-length"), "-",
+        tokens["response-time"](request, response), "ms",
     ];
 
     // For POST requests, include the request body
     if (request.method === "POST") {
-        return logData.concat(tokens.body(request, response)).join(' ');
+        return logData.concat(tokens.body(request, response)).join(" ");
     }
 
-    return logData.join(' ');
+    return logData.join(" ");
 }));
 
 
 // General info
-app.get('/info', (request, response) => {
+app.get("/info", (request, response) => {
     Person.find({})
         .then(persons => {
             let infoMessage = `<p>Phonebook has info for ${persons.length} `;
@@ -41,16 +41,16 @@ app.get('/info', (request, response) => {
 });
 
 
-// GET list of phonebook entries 
-app.get('/api/persons', (request, response) => {
+// GET list of phonebook entries
+app.get("/api/persons", (request, response) => {
     Person.find({}).then(persons => {
         response.json(persons);
     });
 });
 
 
-// GET single phonebook entry 
-app.get('/api/persons/:id', (request, response, next) => {
+// GET single phonebook entry
+app.get("/api/persons/:id", (request, response, next) => {
     Person.findById(request.params.id)
         .then(person => {
             if (!person) {
@@ -62,8 +62,8 @@ app.get('/api/persons/:id', (request, response, next) => {
 });
 
 
-// DELETE single phonebook entry 
-app.delete('/api/persons/:id', (request, response, next) => {
+// DELETE single phonebook entry
+app.delete("/api/persons/:id", (request, response, next) => {
     Person.findByIdAndDelete(request.params.id)
         .then(deletedPerson => {
             // Check if the person to be deleted exists in the database
@@ -81,25 +81,25 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 
 // POST(append) single entry to the phonebook list
-app.post('/api/persons', (request, response, next) => {
+app.post("/api/persons", (request, response, next) => {
     const person = new Person(request.body);
     person.save({})
         .then(savedPerson => {
-            response.json(savedPerson)
+            response.json(savedPerson);
         })
         .catch(next);
 });
 
 
 // Updates the name or number or both of an already existing contact
-app.put('/api/persons/:id', (request, response, next) => {
+app.put("/api/persons/:id", (request, response, next) => {
     if (!request.body.number) {
         return response.status(400).json({
             error: "number is missing"
         });
     }
 
-    updatedPerson = { number: request.body.number }
+    const updatedPerson = { number: request.body.number };
     const opts = { new: true, runValidators: true };
     Person.findByIdAndUpdate(request.params.id, updatedPerson, opts)
         .then(updateNote => {
@@ -127,11 +127,11 @@ const errorHandler = (error, request, response, next) => {
 
     // Handle bad formatted person id
     if (error.name === "CastError") {
-        return response.status(400).send({ error: "malformatted id" })
+        return response.status(400).send({ error: "malformatted id" });
     }
     // Handle mongoose validation errors
     if (error.name === "ValidationError") {
-        return response.status(400).send({ error: error.message })
+        return response.status(400).send({ error: error.message });
     }
 
     next(error);
