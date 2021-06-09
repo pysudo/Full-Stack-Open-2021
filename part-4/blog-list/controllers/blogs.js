@@ -3,24 +3,18 @@ const Blog = require("../models/blog");
 
 
 // GET all information about the blogs in the blog list
-blogsRouter.get("/", (request, response) => {
-    Blog
-        .find({})
-        .then(blogs => {
-            response.json(blogs);
-        });
+blogsRouter.get("/", async (request, response) => {
+    const blogs = await Blog.find({});
+    response.json(blogs);
 });
 
 
 // Add a blog to the blog list
-blogsRouter.post("/", (request, response) => {
+blogsRouter.post("/", async (request, response) => {
     const blog = new Blog(request.body);
+    const newBlog = await blog.save();
 
-    blog
-        .save()
-        .then(result => {
-            response.status(201).json(result);
-        });
+    response.status(201).json(newBlog);
 });
 
 

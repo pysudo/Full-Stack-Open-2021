@@ -38,5 +38,6 @@ module.exports = {
         "camelcase": "error",
         "capitalized-comments": "error",
         "prefer-const": "error",
+        "no-console": "error"
     }
 };
