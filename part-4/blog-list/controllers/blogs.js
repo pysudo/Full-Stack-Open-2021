@@ -1,26 +1,43 @@
 const blogsRouter = require("express").Router();
+
 const Blog = require("../models/blog");
+const { userExtractor } = require("../utils/middleware");
 
 
 // GET all information about the blogs in the blog list
 blogsRouter.get("/", async (request, response) => {
-    const blogs = await Blog.find({});
+    const blogs = await Blog.find({}).populate("user", { blogs: 0 });
     response.json(blogs);
 });
 
 
 // Add a blog to the blog list
-blogsRouter.post("/", async (request, response) => {
-    const blog = new Blog(request.body);
-    const newBlog = await blog.save();
+blogsRouter.post("/", userExtractor, async (request, response) => {
+    const newBlog = {
+        title: request.body.title,
+        author: request.body.author,
+        url: request.body.url,
+        likes: request.body.likes || 0,
+        user: request.user._id
+    };
+    const blog = new Blog(newBlog);
+    const savedBlog = await blog.save();
+
+    request.user.blogs = request.user.blogs.concat(savedBlog._id);
+    await request.user.save();
 
     response.status(201).json(newBlog);
 });
 
 
 // Delete a blog from the blog list
-blogsRouter.delete("/:id", async (request, response) => {
-    await Blog.findByIdAndDelete(request.params.id);
+blogsRouter.delete("/:id", userExtractor, async (request, response) => {
+    const blog = await Blog.findById(request.params.id);
+    if (blog.user.toString() !== request.user._id.toString()) {
+        return response.status(403).end();
+    }
+
+    await Blog.findByIdAndDelete(blog._id);
 
     response.status(204).end();
 });
