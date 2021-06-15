@@ -25,7 +25,7 @@ loginRouter.post("/", async (request, response) => {
     };
     const token = jwt.sign(userForToken, process.env.SECRET);
 
-    response.send({ token });
+    response.send({ token, username: user.username, name: user.name });
 });
 
 
