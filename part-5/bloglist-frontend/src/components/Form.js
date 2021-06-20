@@ -1,37 +1,41 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
+import Toggleable from "./Toggleable";
 import loginService from "../services/login";
 import blogService from "../services/blogs";
 
 
-const LoginForm = props => {
+const LoginForm = ({ setUser, notification, setNotification }) => {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+
     const handleLogin = async (event) => {
         event.preventDefault();
 
         try {
             const user = await loginService.login(
-                { username: props.username, password: props.password }
+                { username, password }
             );
             window.localStorage.setItem(
                 "blogAppUserDetails", JSON.stringify(user)
             );
             blogService.setToken(user.token);
-            props.setUser(user);
-            props.setUsername("");
-            props.setPassword("");
-            props.setNotification("successfully logged in");
-            props.setNotification({
+            setUsername("");
+            setPassword("");
+            setUser(user);
+            setNotification("successfully logged in");
+            setNotification({
                 message: "successfully logged in",
                 status: "success"
             });
-            setTimeout(() => props.setNotification({}), 5000);
+            setTimeout(() => setNotification({}), 5000);
         }
         catch (exception) {
-            props.setNotification({
+            setNotification({
                 message: exception.response.data.error,
                 status: "error"
             });
-            setTimeout(() => props.setNotification({}), 5000);
+            setTimeout(() => setNotification({}), 5000);
         }
     };
 
@@ -39,23 +43,23 @@ const LoginForm = props => {
         <div>
             <h2>Log in to application</h2>
 
-            <div className={props.notification.status}>
-                <p>{props.notification.message}</p>
+            <div className={notification.status}>
+                <p>{notification.message}</p>
             </div>
 
             <form onSubmit={handleLogin}>
                 <div>
                     username
                     <input
-                        value={props.username}
-                        onChange={({ target }) => props.setUsername(target.value)}
+                        value={username}
+                        onChange={({ target }) => setUsername(target.value)}
                     />
                 </div>
                 <div>
                     password
                     <input
-                        value={props.password}
-                        onChange={({ target }) => props.setPassword(target.value)}
+                        value={password}
+                        onChange={({ target }) => setPassword(target.value)}
                     />
                 </div>
                 <button type="submit">login</button>
@@ -70,8 +74,11 @@ const BlogForm = ({ setBlogs, setNotification }) => {
     const [author, setAuthor] = useState("");
     const [url, setUrl] = useState("");
 
+    const blogFormRef = useRef();
     const handleBlogCreation = async (event) => {
         event.preventDefault();
+        blogFormRef.current.setVisibility(false);
+
         try {
             await blogService.create({
                 title,
@@ -99,22 +106,34 @@ const BlogForm = ({ setBlogs, setNotification }) => {
         }
     };
 
+
     return (
-        <form onSubmit={handleBlogCreation}>
-            <div>
-                title:
-                <input value={title} onChange={({ target }) => setTitle(target.value)} />
-            </div>
-            <div>
-                author:
-                <input value={author} onChange={({ target }) => setAuthor(target.value)} />
-            </div>
-            <div>
-                url:
-                <input value={url} onChange={({ target }) => setUrl(target.value)} />
-            </div>
-            <button type="submit">create</button>
-        </form>
+        <Toggleable buttonLabel="create new blog" ref={blogFormRef}>
+            <form onSubmit={handleBlogCreation}>
+                <div>
+                    title:
+                    <input
+                        value={title}
+                        onChange={({ target }) => setTitle(target.value)}
+                    />
+                </div>
+                <div>
+                    author:
+                    <input
+                        value={author}
+                        onChange={({ target }) => setAuthor(target.value)}
+                    />
+                </div>
+                <div>
+                    url:
+                    <input
+                        value={url}
+                        onChange={({ target }) => setUrl(target.value)}
+                    />
+                </div>
+                <button type="submit">create</button>
+            </form>
+        </Toggleable >
     )
 }
 

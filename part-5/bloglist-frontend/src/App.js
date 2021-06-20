@@ -8,8 +8,6 @@ import blogService from "./services/blogs";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
   const [notification, setNotification] = useState({});
 
@@ -24,26 +22,25 @@ const App = () => {
   }
 
   useEffect(() => {
-    blogService.getAll().then(blogs =>
-      setBlogs(blogs)
-    )
+    blogService.getAll().then(blogs => {
+      blogs = blogs.sort((a, b) => b.likes - a.likes)
+      return setBlogs(blogs);
+    }
+    );
   }, []);
+
   useEffect(() => {
     const userJSONDetails = window.localStorage.getItem("blogAppUserDetails");
     if (userJSONDetails) {
-      const user = JSON.parse(userJSONDetails);
-      setUser(user);
-      blogService.setToken(user.token);
+      const newUser = JSON.parse(userJSONDetails);
+      setUser(newUser);
+      blogService.setToken(newUser.token);
     }
   }, []);
 
+
   if (user === null) {
     return <LoginForm
-      username={username}
-      password={password}
-      user={user}
-      setUsername={setUsername}
-      setPassword={setPassword}
       setUser={setUser}
       notification={notification}
       setNotification={setNotification}
@@ -70,7 +67,12 @@ const App = () => {
       <BlogForm setBlogs={setBlogs} setNotification={setNotification} />
 
       {blogs.map(blog =>
-        <Blog key={blog.id} blog={blog} />
+        <Blog key={blog.id}
+          blog={blog}
+          blogs={blogs}
+          setBlogs={setBlogs}
+          user={user}
+        />
       )}
     </div>
   )
