@@ -65,11 +65,11 @@ const LoginForm = ({ setUser, notification, setNotification }) => {
                 <button type="submit">login</button>
             </form>
         </div>
-    )
+    );
 };
 
 
-const BlogForm = ({ setBlogs, setNotification }) => {
+const BlogForm = ({ setBlogs, setNotification, createBlog }) => {
     const [title, setTitle] = useState("");
     const [author, setAuthor] = useState("");
     const [url, setUrl] = useState("");
@@ -80,11 +80,7 @@ const BlogForm = ({ setBlogs, setNotification }) => {
         blogFormRef.current.setVisibility(false);
 
         try {
-            await blogService.create({
-                title,
-                author,
-                url
-            });
+            await createBlog(title, author, url);
             setNotification({
                 message: `a new blog ${title} by ${author} added`,
                 status: "success"
@@ -95,7 +91,7 @@ const BlogForm = ({ setBlogs, setNotification }) => {
             setUrl("");
             blogService.getAll().then(blogs =>
                 setBlogs(blogs)
-            )
+            );
         }
         catch (exception) {
             setNotification({
@@ -134,8 +130,8 @@ const BlogForm = ({ setBlogs, setNotification }) => {
                 <button type="submit">create</button>
             </form>
         </Toggleable >
-    )
-}
+    );
+};
 
 
 export { LoginForm, BlogForm };

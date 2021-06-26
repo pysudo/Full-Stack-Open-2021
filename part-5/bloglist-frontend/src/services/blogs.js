@@ -9,34 +9,34 @@ const setToken = newToken => token = `Bearer ${newToken}`;
 
 
 const getAll = async () => {
-  const response = await axios.get(baseUrl);
+    const response = await axios.get(baseUrl);
 
-  return response.data;
+    return response.data;
 };
 
 
 const create = async blogDetails => {
-  const config = {
-    headers: { Authorization: token }
-  };
+    const config = {
+        headers: { Authorization: token }
+    };
 
-  return await axios.post(baseUrl, blogDetails, config);
+    return await axios.post(baseUrl, blogDetails, config);
 };
 
 
 const update = async (blogDetails, id) => {
-  const response = await axios.put(`${baseUrl}/${id}`, blogDetails);
-  
-  return response.data;
+    const response = await axios.put(`${baseUrl}/${id}`, blogDetails);
+
+    return response.data;
 };
 
 
 const remove = async (id) => {
-  const config = {
-    headers: { Authorization: token }
-  };
+    const config = {
+        headers: { Authorization: token }
+    };
 
-  await axios.delete(`${baseUrl}/${id}`, config);
+    await axios.delete(`${baseUrl}/${id}`, config);
 };
 
 
