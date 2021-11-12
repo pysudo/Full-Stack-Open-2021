@@ -13,14 +13,26 @@ const Blog = ({ blog, user, handleLikes, handleDelete }) => {
     };
 
     return (
-        <div style={blogStyle}>
-            {blog.title} {blog.author}
+        <div className="blog" style={blogStyle}>
+            {blog.title} - {blog.author}
             <button
                 type="button"
                 onClick={() => setVisibility(!visibility)}
             >
                 {visibility ? "hide" : "view"}
             </button>
+            <button
+                style={{
+                    display: (
+                        blog.user && (blog.user.username === user.username)
+                    ) ? "" : "none"
+                }}
+                type="button"
+                onClick={() => handleDelete(blog.id, blog)}
+            >
+                delete
+            </button>
+
             <div
                 className="showDetails"
                 style={{ display: visibility ? "" : "none" }}
@@ -29,27 +41,13 @@ const Blog = ({ blog, user, handleLikes, handleDelete }) => {
                     {blog.url}
                 </div>
                 <div>
-                    likes {blog.likes}
+                    likes <span className="likes">{blog.likes}</span>
                     <button onClick={() => handleLikes(blog.id, blog)}>
                         like
                     </button>
                 </div>
                 <div>
                     {blog.user ? blog.user.name : ""}
-                </div>
-                <div
-                    style={{
-                        display: (blog.user && (blog.user.username === user.username))
-                            ? ""
-                            : "none"
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => handleDelete(blog.id, blog)}
-                    >
-                        delete
-                    </button>
                 </div>
             </div>
         </div>

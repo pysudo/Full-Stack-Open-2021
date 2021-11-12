@@ -95,7 +95,7 @@ const App = () => {
             <div>
                 <p>
                     {user.name} logged in
-                    <button type="button" onClick={handleLogout}>
+                    <button id="btnLogout" type="button" onClick={handleLogout}>
                         logout
                     </button>
                 </p>
@@ -108,14 +108,16 @@ const App = () => {
                 createBlog={createBlog}
             />
 
-            {blogs.map(blog =>
-                <Blog key={blog.id}
-                    blog={blog}
-                    user={user}
-                    handleLikes={handleLikes}
-                    handleDelete={handleDelete}
-                />
-            )}
+            <div id="blogList">
+                {blogs.map(blog =>
+                    <Blog key={blog.id}
+                        blog={blog}
+                        user={user}
+                        handleLikes={handleLikes}
+                        handleDelete={handleDelete}
+                    />
+                )}
+            </div>
         </div>
     );
 };

@@ -1,3 +1,5 @@
+/* eslint no-console: "off" */
+
 const info = (...params) => {
 
     if (process.env.NODE_ENV !== "test") {

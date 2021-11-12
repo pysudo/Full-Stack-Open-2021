@@ -3,11 +3,13 @@ module.exports = {
     "env": {
         "browser": true,
         "es6": true,
-        "jest/globals": true 
+        "jest/globals": true,
+        "cypress/globals": true
     },
-    "extends": [ 
+    "extends": [
         "eslint:recommended",
-        "plugin:react/recommended"
+        "plugin:react/recommended",
+        "plugin:cypress/recommended"
     ],
     "parserOptions": {
         "ecmaFeatures": {
@@ -17,12 +19,12 @@ module.exports = {
         "sourceType": "module"
     },
     "plugins": [
-        "react", "jest"
+        "react", "jest", "cypress"
     ],
     "rules": {
         "indent": [
             "error",
-            4  
+            4
         ],
         "linebreak-style": [
             "error",
@@ -48,8 +50,8 @@ module.exports = {
         "react/prop-types": 0
     },
     "settings": {
-      "react": {
-        "version": "detect"
-      }
+        "react": {
+            "version": "detect"
+        }
     }
-  }
+}

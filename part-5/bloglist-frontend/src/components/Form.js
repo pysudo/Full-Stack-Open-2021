@@ -51,6 +51,7 @@ const LoginForm = ({ setUser, notification, setNotification }) => {
                 <div>
                     username
                     <input
+                        id="txtUsername"
                         value={username}
                         onChange={({ target }) => setUsername(target.value)}
                     />
@@ -58,11 +59,12 @@ const LoginForm = ({ setUser, notification, setNotification }) => {
                 <div>
                     password
                     <input
+                        id="txtPassword"
                         value={password}
                         onChange={({ target }) => setPassword(target.value)}
                     />
                 </div>
-                <button type="submit">login</button>
+                <button id="login-button" type="submit">login</button>
             </form>
         </div>
     );
@@ -109,6 +111,7 @@ const BlogForm = ({ setBlogs, setNotification, createBlog }) => {
                 <div>
                     title:
                     <input
+                        id="title"
                         value={title}
                         onChange={({ target }) => setTitle(target.value)}
                     />
@@ -116,6 +119,7 @@ const BlogForm = ({ setBlogs, setNotification, createBlog }) => {
                 <div>
                     author:
                     <input
+                        id="author"
                         value={author}
                         onChange={({ target }) => setAuthor(target.value)}
                     />
@@ -123,11 +127,12 @@ const BlogForm = ({ setBlogs, setNotification, createBlog }) => {
                 <div>
                     url:
                     <input
+                        id="url"
                         value={url}
                         onChange={({ target }) => setUrl(target.value)}
                     />
                 </div>
-                <button type="submit">create</button>
+                <button id="btnCreateNote" type="submit">create</button>
             </form>
         </Toggleable >
     );

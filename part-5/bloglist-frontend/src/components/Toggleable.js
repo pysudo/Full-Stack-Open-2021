@@ -20,7 +20,11 @@ const Toggleable = React.forwardRef((props, ref) => {
                     cancel
                 </button>
             </div>
-            <button style={hideWhenVisible} onClick={() => setVisibility(true)}>
+            <button
+                id="btnToggleBlogForm"
+                style={hideWhenVisible}
+                onClick={() => setVisibility(true)}
+            >
                 {props.buttonLabel}
             </button>
         </>
